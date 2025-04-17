@@ -1,6 +1,22 @@
 const express = require('express');
 const app = express();
 
+// DB CONNECTION STARTS
+const mongoose = require('mongoose');
+
+// Replace with your actual connection string
+const mongoUri = 'mongodb+srv://furkansanli:furkansanli@mytestcluster.rwhohc0.mongodb.net/?retryWrites=true&w=majority&appName=myTestCluster';
+
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+// DB CONNECTION ENDS
+
+
+
 app.use(express.json()); // Needed to parse JSON request body
 
 function formatPhone(phone) {
@@ -48,7 +64,7 @@ function formatPhone(phone) {
 }
 
 // POST /format-phone
-app.post('/format-phone', (req, res) => {
+app.post('/format-phone', async (req, res) => {
   try {
     const { phone } = req.body;
     if (!phone) {
@@ -56,13 +72,27 @@ app.post('/format-phone', (req, res) => {
     }
 
     const result = formatPhone(phone);
-    res.json(result);
+
+    // Save to DB
+    const saved = await Phone.create({ original: phone, ...result });
+
+    res.json(saved);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+
+// DB Configuration Starts
+
+const phoneSchema = new mongoose.Schema({
+  original: String,
+  phoneWithCountryCode: String,
+  phoneWithoutCountryCode: String,
+  countryCode: String,
+  countryName: String
 });
+
+const Phone = mongoose.model('Phone', phoneSchema);
+
+// DB Configuration Ends
