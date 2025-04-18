@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const port = 3000;
 
 // DB CONNECTION STARTS
 const mongoose = require('mongoose');
@@ -15,6 +16,19 @@ mongoose.connect(mongoUri, {
   .catch(err => console.error('❌ MongoDB connection error:', err));
 // DB CONNECTION ENDS
 
+
+// FETCH PHONES STARTS
+
+app.get('/phones', async (req, res) => {
+  try {
+    const phones = await Phone.find();
+    res.json(phones);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch phones' });
+  }
+});
+
+// FETCH PHONES ENDS
 
 
 app.use(express.json()); // Needed to parse JSON request body
@@ -75,7 +89,7 @@ app.post('/format-phone', async (req, res) => {
 
     // Save to DB
     const saved = await Phone.create({ original: phone, ...result });
-
+    console.log('✅ Saved phone:', saved);
     res.json(saved);
   } catch (error) {
     res.status(400).json({ error: error.message });
