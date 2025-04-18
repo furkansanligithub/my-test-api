@@ -1,11 +1,11 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const app = express();
 const port = 3000;
 
-// DB CONNECTION STARTS
-const mongoose = require('mongoose');
+app.use(express.json()); // Needed to parse JSON request body
 
-// Replace with your actual connection string
+// ✅ 1. MongoDB Connection
 const mongoUri = 'mongodb+srv://furkansanli:furkansanli@mytestcluster.rwhohc0.mongodb.net/?retryWrites=true&w=majority&appName=myTestCluster';
 
 mongoose.connect(mongoUri, {
@@ -14,25 +14,19 @@ mongoose.connect(mongoUri, {
 })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
-// DB CONNECTION ENDS
 
-
-// FETCH PHONES STARTS
-
-app.get('/phones', async (req, res) => {
-  try {
-    const phones = await Phone.find();
-    res.json(phones);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch phones' });
-  }
+// ✅ 2. Define the Phone Schema & Model
+const phoneSchema = new mongoose.Schema({
+  original: String,
+  phoneWithCountryCode: String,
+  phoneWithoutCountryCode: String,
+  countryCode: String,
+  countryName: String
 });
 
-// FETCH PHONES ENDS
+const Phone = mongoose.model('Phone', phoneSchema);
 
-
-app.use(express.json()); // Needed to parse JSON request body
-
+// ✅ 3. Phone Formatter Function
 function formatPhone(phone) {
   const countryMap = {
     '+1': 'United States/Canada',
@@ -48,17 +42,14 @@ function formatPhone(phone) {
     '+39': 'Italy',
   };
 
-  // Clean up input
   let cleaned = phone.replace(/[\s\-\(\)]/g, '');
 
-  // Make sure it starts with +
   if (!cleaned.startsWith('+')) {
     cleaned = '+' + cleaned;
   }
 
-  // ✅ Try exact matches with country codes only (no extra digits)
   const matchedCode = Object.keys(countryMap)
-    .sort((a, b) => b.length - a.length) // try longest first
+    .sort((a, b) => b.length - a.length)
     .find(code => cleaned.startsWith(code));
 
   if (!matchedCode) {
@@ -77,7 +68,7 @@ function formatPhone(phone) {
   };
 }
 
-// POST /format-phone
+// ✅ 4. POST Route to Format & Save Phone
 app.post('/format-phone', async (req, res) => {
   try {
     const { phone } = req.body;
@@ -86,27 +77,28 @@ app.post('/format-phone', async (req, res) => {
     }
 
     const result = formatPhone(phone);
-
-    // Save to DB
     const saved = await Phone.create({ original: phone, ...result });
+
     console.log('✅ Saved phone:', saved);
     res.json(saved);
   } catch (error) {
+    console.error('❌ Error in /format-phone:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-
-// DB Configuration Starts
-
-const phoneSchema = new mongoose.Schema({
-  original: String,
-  phoneWithCountryCode: String,
-  phoneWithoutCountryCode: String,
-  countryCode: String,
-  countryName: String
+// ✅ 5. GET Route to Fetch All Phones
+app.get('/phones', async (req, res) => {
+  try {
+    const phones = await Phone.find();
+    res.json(phones);
+  } catch (err) {
+    console.error('❌ Error fetching phones:', err);
+    res.status(500).json({ error: 'Failed to fetch phones' });
+  }
 });
 
-const Phone = mongoose.model('Phone', phoneSchema);
-
-// DB Configuration Ends
+// ✅ 6. Start Server
+app.listen(port, () => {
+  console.log(`🚀 Server running on http://localhost:${port}`);
+});
