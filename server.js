@@ -34,12 +34,13 @@ function formatPhone(phone) {
     '+49': 'Germany',
     '+33': 'France',
     '+34': 'Spain',
-    '+90': 'Turkey',
+    '+90': 'Turkiye',
     '+91': 'India',
     '+81': 'Japan',
     '+61': 'Australia',
     '+86': 'China',
     '+39': 'Italy',
+    '+55': 'Brazil',
   };
 
   let cleaned = phone.replace(/[\s\-\(\)]/g, '');
