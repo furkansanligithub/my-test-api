@@ -1,9 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const app = express();
+
 const port = 3000;
 
 app.use(express.json()); // Needed to parse JSON request body
+app.use(cors());
 
 // ✅ 1. MongoDB Connection
 const mongoUri = 'mongodb+srv://furkansanli:furkansanli@mytestcluster.rwhohc0.mongodb.net/?retryWrites=true&w=majority&appName=myTestCluster';
