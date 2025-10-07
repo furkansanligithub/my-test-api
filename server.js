@@ -9,8 +9,8 @@ app.use(express.json()); // Needed to parse JSON request body
 app.use(cors());
 
 // ✅ 1. MongoDB Connection
-const mongoUri = 'mongodb+srv://furkansanli:furkansanli@mytestcluster.rwhohc0.mongodb.net/?retryWrites=true&w=majority&appName=myTestCluster';
-
+const mongoUri1 = 'mongodb+srv://furkansanli:furkansanli@mytestcluster.rwhohc0.mongodb.net/?retryWrites=true&w=majority&appName=myTestCluster';
+const mongoUri1 = 'mongodb+srv://furkansanli:Wasd123+654+789@mymongousers.pscuiyq.mongodb.net/?retryWrites=true&w=majority&appName=myMongoUsers';
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
